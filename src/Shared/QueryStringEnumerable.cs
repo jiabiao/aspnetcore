@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Components.Routing
+namespace Microsoft.AspNetCore.Internal
 {
     // A mechanism for reading key/value pairs from a querystring without having
     // to allocate and populate an entire dictionary
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Components.Routing
                 }
             }
 
-            public (string key, string value) Current
+            public (string Key, string Value) Current
                 => (currentName!, currentValue!);
 
             public bool MoveNext()

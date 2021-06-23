@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.WebUtilities
@@ -178,53 +179,9 @@ namespace Microsoft.AspNetCore.WebUtilities
                 return null;
             }
 
-            int scanIndex = 0;
-            if (queryString[0] == '?')
+            foreach (var (key, value) in new QueryStringEnumerable(queryString))
             {
-                scanIndex = 1;
-            }
-
-            int textLength = queryString.Length;
-            int equalIndex = queryString.IndexOf('=');
-            if (equalIndex == -1)
-            {
-                equalIndex = textLength;
-            }
-            while (scanIndex < textLength)
-            {
-                int delimiterIndex = queryString.IndexOf('&', scanIndex);
-                if (delimiterIndex == -1)
-                {
-                    delimiterIndex = textLength;
-                }
-                if (equalIndex < delimiterIndex)
-                {
-                    while (scanIndex != equalIndex && char.IsWhiteSpace(queryString[scanIndex]))
-                    {
-                        ++scanIndex;
-                    }
-                    string name = queryString.Substring(scanIndex, equalIndex - scanIndex);
-                    string value = queryString.Substring(equalIndex + 1, delimiterIndex - equalIndex - 1);
-                    accumulator.Append(
-                        Uri.UnescapeDataString(name.Replace('+', ' ')),
-                        Uri.UnescapeDataString(value.Replace('+', ' ')));
-                    equalIndex = queryString.IndexOf('=', delimiterIndex);
-                    if (equalIndex == -1)
-                    {
-                        equalIndex = textLength;
-                    }
-                }
-                else
-                {
-                    if (delimiterIndex > scanIndex)
-                    {
-                        string name = queryString.Substring(scanIndex, delimiterIndex - scanIndex);
-                        accumulator.Append(
-                            Uri.UnescapeDataString(name.Replace('+', ' ')),
-                            string.Empty);
-                    }
-                }
-                scanIndex = delimiterIndex + 1;
+                accumulator.Append(key, value);
             }
 
             if (!accumulator.HasValues)
