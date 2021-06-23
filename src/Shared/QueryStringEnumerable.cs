@@ -9,9 +9,9 @@ namespace Microsoft.AspNetCore.Internal
     // to allocate and populate an entire dictionary
     internal readonly struct QueryStringEnumerable
     {
-        private readonly string _queryString;
+        private readonly string? _queryString;
 
-        public QueryStringEnumerable(string queryString)
+        public QueryStringEnumerable(string? queryString)
         {
             _queryString = queryString;
         }

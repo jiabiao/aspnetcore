@@ -104,7 +104,8 @@ namespace Microsoft.AspNetCore.Components.Routing
         private static IReadOnlyList<(string key, string value)> Parse(string query)
         {
             var result = new List<(string key, string value)>();
-            foreach (var (key, value) in new QueryStringEnumerable(query))
+            var enumerable = new QueryStringEnumerable(query);
+            foreach (var (key, value) in enumerable)
             {
                 result.Add((key, value));
             }

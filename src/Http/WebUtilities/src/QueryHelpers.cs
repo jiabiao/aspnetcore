@@ -173,13 +173,9 @@ namespace Microsoft.AspNetCore.WebUtilities
         public static Dictionary<string, StringValues>? ParseNullableQuery(string? queryString)
         {
             var accumulator = new KeyValueAccumulator();
+            var enumerable = new QueryStringEnumerable(queryString);
 
-            if (string.IsNullOrEmpty(queryString) || queryString == "?")
-            {
-                return null;
-            }
-
-            foreach (var (key, value) in new QueryStringEnumerable(queryString))
+            foreach (var (key, value) in enumerable)
             {
                 accumulator.Append(key, value);
             }
