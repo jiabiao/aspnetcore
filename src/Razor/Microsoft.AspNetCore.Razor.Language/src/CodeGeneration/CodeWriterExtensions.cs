@@ -145,15 +145,38 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             return writer;
         }
 
-        public static CodeWriter WriteLineNumberDirective(this CodeWriter writer, SourceSpan span)
+        public static CodeWriter WriteLineNumberDirective(this CodeWriter writer, SourceSpan span, int? offset = null)
         {
-            if (writer.Length >= writer.NewLine.Length && !IsAtBeginningOfLine(writer))
-            {
-                writer.WriteLine();
-            }
-
+            // if (writer.Length >= writer.NewLine.Length && !IsAtBeginningOfLine(writer))
+            // {
+            //     writer.WriteLine();
+            // }
+            var shouldUseEnhancedLinePragma = true;
             var lineNumberAsString = (span.LineIndex + 1).ToString(CultureInfo.InvariantCulture);
-            return writer.Write("#line ").Write(lineNumberAsString).Write(" \"").Write(span.FilePath).WriteLine("\"");
+            
+            if (shouldUseEnhancedLinePragma)
+            {
+                var characterStartAsString = ((offset ?? 0) + 1).ToString(CultureInfo.InvariantCulture);
+                var lineEndAsString = (span.LineIndex + 1).ToString(CultureInfo.InvariantCulture);
+                var characterEndAsString = ((offset ?? 0) + span.Length).ToString(CultureInfo.InvariantCulture);
+                var characterOffsetAsString = (offset ?? 0).ToString(CultureInfo.InvariantCulture);
+                return writer.Write("#line (")
+                    .Write(lineNumberAsString)
+                    .Write(",")
+                    .Write(characterStartAsString)
+                    .Write(")-(")
+                    .Write(lineEndAsString)
+                    .Write(",")
+                    .Write(characterEndAsString)
+                    .Write(") ")
+                    .Write(characterOffsetAsString)
+                    .Write(" \"").Write(span.FilePath).WriteLine("\"");
+            }
+            else
+            {
+                return writer.Write("#line ").Write(lineNumberAsString).Write(" \"").Write(span.FilePath).WriteLine("\"");
+            }
+            
         }
 
         public static CodeWriter WriteStartMethodInvocation(this CodeWriter writer, string methodName)
@@ -454,7 +477,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             return new CSharpCodeWritingScope(writer);
         }
 
-        public static IDisposable BuildLinePragma(this CodeWriter writer, SourceSpan? span, CodeRenderingContext context)
+        public static IDisposable BuildLinePragma(this CodeWriter writer, SourceSpan? span, CodeRenderingContext context, int? length = null)
         {
             if (string.IsNullOrEmpty(span?.FilePath))
             {
@@ -462,7 +485,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 return NullDisposable.Default;
             }
 
-            return new LinePragmaWriter(writer, span.Value, context);
+            return new LinePragmaWriter(writer, span.Value, context, length);
         }
 
         private static void WriteVerbatimStringLiteral(CodeWriter writer, string literal)
@@ -619,7 +642,8 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             public LinePragmaWriter(
                 CodeWriter writer,
                 SourceSpan span,
-                CodeRenderingContext context)
+                CodeRenderingContext context,
+                int? length = null)
             {
                 if (writer == null)
                 {
@@ -633,17 +657,17 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 _sourceLineIndex = span.LineIndex;
                 _writer.CurrentIndent = 0;
 
-                if (!_context.Options.SuppressNullabilityEnforcement)
-                {
-                    var endsWithNewline = _writer.Length > 0 && _writer[_writer.Length - 1] == '\n';
-                    if (!endsWithNewline)
-                    {
-                        _writer.WriteLine();
-                    }
-                    _writer.WriteLine("#nullable restore");
-                }
+                // if (!_context.Options.SuppressNullabilityEnforcement)
+                // {
+                //     var endsWithNewline = _writer.Length > 0 && _writer[_writer.Length - 1] == '\n';
+                //     if (!endsWithNewline)
+                //     {
+                //         _writer.WriteLine();
+                //     }
+                //     _writer.WriteLine("#nullable restore");
+                // }
 
-                WriteLineNumberDirective(writer, span);
+                WriteLineNumberDirective(writer, span, length);
 
                 // Capture the line index after writing the #line directive.
                 _startLineIndex = writer.Location.LineIndex;
@@ -665,6 +689,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 }
 
                 var lineCount = _writer.Location.LineIndex - _startLineIndex;
+                System.Console.WriteLine($"lineCount: {lineCount}");
                 var linePragma = new LinePragma(_sourceLineIndex, lineCount, _sourceFilePath);
                 _context.AddLinePragma(linePragma);
 

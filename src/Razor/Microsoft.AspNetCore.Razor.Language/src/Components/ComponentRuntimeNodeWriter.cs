@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             IDisposable linePragmaScope = null;
             if (node.Source != null)
             {
-                linePragmaScope = context.CodeWriter.BuildLinePragma(node.Source.Value, context);
+                linePragmaScope = context.CodeWriter.BuildLinePragma(node.Source.Value, context, null);
                 context.CodeWriter.WritePadding(0, node.Source.Value, context);
             }
 
@@ -96,11 +96,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 throw new ArgumentNullException(nameof(node));
             }
 
+            var methodInvocation = $"{_scopeStack.BuilderVarName}.{ComponentsApi.RenderTreeBuilder.AddContent}(" +
+                (_sourceSequence++).ToString(CultureInfo.InvariantCulture);
+
+
+            IDisposable linePragmaScope = null;
+            if (node.Source != null)
+            {
+                linePragmaScope = context.CodeWriter.BuildLinePragma(node.Source.Value, context, methodInvocation.Length + 2);
+            }
+
             // Since we're not in the middle of writing an element, this must evaluate as some
             // text to display
             context.CodeWriter
-                .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{ComponentsApi.RenderTreeBuilder.AddContent}")
-                .Write((_sourceSequence++).ToString(CultureInfo.InvariantCulture))
+                .Write(methodInvocation)
                 .WriteParameterSeparator();
 
             for (var i = 0; i < node.Children.Count; i++)
@@ -117,6 +126,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
 
             context.CodeWriter.WriteEndMethodInvocation();
+
+            linePragmaScope?.Dispose();
         }
 
         public override void WriteCSharpExpressionAttributeValue(CodeRenderingContext context, CSharpExpressionAttributeValueIntermediateNode node)
@@ -1043,11 +1054,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 return;
             }
 
-            using (context.CodeWriter.BuildLinePragma(token.Source, context))
-            {
-                context.CodeWriter.WritePadding(0, token.Source.Value, context);
-                context.CodeWriter.Write(token.Content);
-            }
+            context.CodeWriter.Write(token.Content);
+            return;
+
+            // using (context.CodeWriter.BuildLinePragma(token.Source, context))
+            // {
+            //     context.CodeWriter.WritePadding(0, token.Source.Value, context);
+            //     context.CodeWriter.Write(token.Content);
+            // }
         }
     }
 }

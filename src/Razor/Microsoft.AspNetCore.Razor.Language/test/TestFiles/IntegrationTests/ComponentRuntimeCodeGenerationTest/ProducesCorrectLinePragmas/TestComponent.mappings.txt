@@ -1,0 +1,21 @@
+Source Location: (148:11,7 [174] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    [Parameter]
+    public int IncrementAmount { get; set; } = 3;
+
+    public static string JsonToHtml(string json)
+    {
+        return $"<pre>{json}</pre>";
+    }
+|
+Generated Location: (1214:43,7 [174] )
+|
+    [Parameter]
+    public int IncrementAmount { get; set; } = 3;
+
+    public static string JsonToHtml(string json)
+    {
+        return $"<pre>{json}</pre>";
+    }
+|
+

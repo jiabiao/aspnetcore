@@ -6792,5 +6792,36 @@ namespace Test
         }
 
         #endregion
+
+        #region LinePragmas
+
+        [Fact]
+        public void ProducesCorrectLinePragmas()
+        {
+            while (!System.Diagnostics.Debugger.IsAttached)
+            {
+                System.Console.WriteLine($"Waiting to attach on ${System.Diagnostics.Process.GetCurrentProcess().Id}");
+                System.Threading.Thread.Sleep(1000);
+            }
+            var generated = CompileToCSharp(@"
+<h1>Single line statement</h1>
+
+Time: @DateTime.Now
+
+<h1>Multiline block statement</h1>
+
+@JsonToHtml(@""{
+  'key1': 'value1'
+}"")
+", throwOnFailure: false);
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated, throwOnFailure: false);
+
+        }
+
+        #endregion
     }
 }

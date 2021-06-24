@@ -1,0 +1,61 @@
+Source Location: (41:2,7 [12] x:\dir\subdir\Test\TestComponent.cshtml)
+|DateTime.Now|
+Generated Location: (859:24,7 [12] )
+|DateTime.Now|
+
+Source Location: (79:6,1 [37] x:\dir\subdir\Test\TestComponent.cshtml)
+|for (var i = 0; i < 10; i++)
+{
+    |
+Generated Location: (995:31,1 [37] )
+|for (var i = 0; i < 10; i++)
+{
+    |
+
+Source Location: (120:8,8 [1] x:\dir\subdir\Test\TestComponent.cshtml)
+|i|
+Generated Location: (1162:40,8 [1] )
+|i|
+
+Source Location: (125:8,13 [3] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+}|
+Generated Location: (1299:47,13 [3] )
+|
+}|
+
+Source Location: (174:13,2 [56] x:\dir\subdir\Test\TestComponent.cshtml)
+|System.Console.WriteLine(1);System.Console.WriteLine(2);|
+Generated Location: (1427:55,2 [56] )
+|System.Console.WriteLine(1);System.Console.WriteLine(2);|
+
+Source Location: (274:17,1 [39] x:\dir\subdir\Test\TestComponent.cshtml)
+|JsonToHtml(@"{
+  'key1': 'value1'
+}")|
+Generated Location: (1612:62,6 [39] )
+|JsonToHtml(@"{
+  'key1': 'value1'
+}")|
+
+Source Location: (326:22,7 [174] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    [Parameter]
+    public int IncrementAmount { get; set; } = 3;
+
+    public static string JsonToHtml(string json)
+    {
+        return $"<pre>{json}</pre>";
+    }
+|
+Generated Location: (1831:73,7 [174] )
+|
+    [Parameter]
+    public int IncrementAmount { get; set; } = 3;
+
+    public static string JsonToHtml(string json)
+    {
+        return $"<pre>{json}</pre>";
+    }
+|
+
