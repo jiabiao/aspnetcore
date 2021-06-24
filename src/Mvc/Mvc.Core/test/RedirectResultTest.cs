@@ -3,13 +3,57 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc
 {
     public class RedirectResultTest
     {
+        [Fact]
+        public void RedirectResult_Constructor_WithParameterUrl_SetsResultUrlAndNotPermanentOrPreserveMethod()
+        {
+            // Arrange
+            var url = "/test/url";
+
+            // Act
+            var result = new RedirectResult(url);
+
+            // Assert
+            Assert.False(result.PreserveMethod);
+            Assert.False(result.Permanent);
+            Assert.Same(url, result.Url);
+        }
+
+        [Fact]
+        public void RedirectResult_Constructor_WithParameterUrlAndPermanent_SetsResultUrlAndPermanentNotPreserveMethod()
+        {
+            // Arrange
+            var url = "/test/url";
+
+            // Act
+            var result = new RedirectResult(url, permanent: true);
+
+            // Assert
+            Assert.False(result.PreserveMethod);
+            Assert.True(result.Permanent);
+            Assert.Same(url, result.Url);
+        }
+
+        [Fact]
+        public void RedirectResult_Constructor_WithParameterUrlPermanentAndPreservesMethod_SetsResultUrlPermanentAndPreservesMethod()
+        {
+            // Arrange
+            var url = "/test/url";
+
+            // Act
+            var result = new RedirectResult(url, permanent: true, preserveMethod: true);
+
+            // Assert
+            Assert.True(result.PreserveMethod);
+            Assert.True(result.Permanent);
+            Assert.Same(url, result.Url);
+        }
+
         [Theory]
         [InlineData("", "/Home/About", "/Home/About")]
         [InlineData("/myapproot", "/test", "/test")]
@@ -19,7 +63,7 @@ namespace Microsoft.AspNetCore.Mvc
             string expectedPath)
         {
             var action
-                = new Func<RedirectResult, HttpContext, Task>(async (result, context) => await ((IResult)result).ExecuteAsync(context));
+                = new Func<RedirectResult, ActionContext, Task>(async (result, context) => await result.ExecuteResultAsync(context));
 
             await BaseRedirectResultTest.Execute_ReturnsContentPath_WhenItDoesNotStartWithTilde(
                 appRoot,
@@ -39,8 +83,8 @@ namespace Microsoft.AspNetCore.Mvc
             string contentPath,
             string expectedPath)
         {
-            var action
-                = new Func<RedirectResult, HttpContext, Task>(async (result, context) => await ((IResult)result).ExecuteAsync(context));
+            var action =
+                new Func<RedirectResult, ActionContext, Task>(async (result, context) => await result.ExecuteResultAsync(context));
 
             await BaseRedirectResultTest.Execute_ReturnsAppRelativePath_WhenItStartsWithTilde(
                 appRoot,

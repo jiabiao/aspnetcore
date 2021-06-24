@@ -14,12 +14,18 @@
     <Compile Include="$(SharedSourceRoot)ObjectMethodExecutor\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)TryParseMethodCache.cs" />
     <Compile Include="..\..\Shared\StreamCopyOperationInternal.cs" />
+    <Compile Include="$(SharedSourceRoot)ResponseContentTypeHelper.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)ResultsHelpers\*.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)RangeHelper\RangeHelper.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <Reference Include="Microsoft.Net.Http.Headers" />
     <Reference Include="Microsoft.Extensions.FileProviders.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
 
 </Project>

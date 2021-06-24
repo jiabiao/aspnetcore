@@ -5,15 +5,14 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Net.Http.Headers;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -270,14 +269,14 @@ namespace Microsoft.AspNetCore.Mvc
             actionContext.HttpContext = httpContext;
 
             // Act
-            var state = FileResultExecutorBase.GetPreconditionState(
+            var state = FileResultHelper.GetPreconditionState(
                 httpRequestHeaders,
                 lastModified,
                 etag,
                 NullLogger.Instance);
 
             // Assert
-            Assert.Equal(FileResultExecutorBase.PreconditionState.ShouldProcess, state);
+            Assert.Equal(FileResultHelper.PreconditionState.ShouldProcess, state);
         }
 
         [Theory]
@@ -309,14 +308,14 @@ namespace Microsoft.AspNetCore.Mvc
             actionContext.HttpContext = httpContext;
 
             // Act
-            var state = FileResultExecutorBase.GetPreconditionState(
+            var state = FileResultHelper.GetPreconditionState(
                 httpRequestHeaders,
                 lastModified,
                 etag,
                 NullLogger.Instance);
 
             // Assert
-            Assert.Equal(FileResultExecutorBase.PreconditionState.PreconditionFailed, state);
+            Assert.Equal(FileResultHelper.PreconditionState.PreconditionFailed, state);
         }
 
         [Theory]
@@ -346,14 +345,14 @@ namespace Microsoft.AspNetCore.Mvc
             actionContext.HttpContext = httpContext;
 
             // Act
-            var state = FileResultExecutorBase.GetPreconditionState(
+            var state = FileResultHelper.GetPreconditionState(
                 httpRequestHeaders,
                 lastModified,
                 etag,
                 NullLogger.Instance);
 
             // Assert
-            Assert.Equal(FileResultExecutorBase.PreconditionState.NotModified, state);
+            Assert.Equal(FileResultHelper.PreconditionState.NotModified, state);
         }
 
         [Theory]
@@ -374,7 +373,7 @@ namespace Microsoft.AspNetCore.Mvc
             actionContext.HttpContext = httpContext;
 
             // Act
-            var ifRangeIsValid = FileResultExecutorBase.IfRangeValid(
+            var ifRangeIsValid = FileResultHelper.IfRangeValid(
                 httpRequestHeaders,
                 lastModified,
                 etag,
