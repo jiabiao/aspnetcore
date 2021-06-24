@@ -5,13 +5,16 @@ using System;
 
 namespace Microsoft.AspNetCore.Internal
 {
-    // A mechanism for reading key/value pairs from a querystring without having
-    // to allocate and populate an entire dictionary
-    internal readonly struct QueryStringEnumerable
+    // A mechanism for reading key/value pairs from a querystring without having to allocate.
+    // It doesn't perform escaping because:
+    // [1] Uri.UnescapeDataString can only operate on string, not on ReadOnlySpan<char>
+    // [2] Maybe the caller doesn't even want to pay the cost of unescaping values they don't care about
+    // So, it's up to the caller to unescape the results if they want.
+    internal readonly ref struct QueryStringEnumerable
     {
-        private readonly string? _queryString;
+        private readonly ReadOnlySpan<char> _queryString;
 
-        public QueryStringEnumerable(string? queryString)
+        public QueryStringEnumerable(ReadOnlySpan<char> queryString)
         {
             _queryString = queryString;
         }
@@ -19,26 +22,37 @@ namespace Microsoft.AspNetCore.Internal
         public Enumerator GetEnumerator()
             => new Enumerator(_queryString);
 
-        public struct Enumerator
+        public readonly ref struct EscapedNameValuePair
         {
-            private readonly string queryString;
+            public readonly bool HasValue;
+            public readonly ReadOnlySpan<char> NameEscaped;
+            public readonly ReadOnlySpan<char> ValueEscaped;
+
+            public EscapedNameValuePair(ReadOnlySpan<char> nameEscaped, ReadOnlySpan<char> valueEscaped)
+            {
+                HasValue = true;
+                NameEscaped = nameEscaped;
+                ValueEscaped = valueEscaped;
+            }
+        }
+
+        public ref struct Enumerator
+        {
+            private readonly ReadOnlySpan<char> queryString;
             private readonly int textLength;
             private int scanIndex;
             private int equalIndex;
-            private string? currentName;
-            private string? currentValue;
 
-            public Enumerator(string? query)
+            public Enumerator(ReadOnlySpan<char> query)
             {
-                if (string.IsNullOrEmpty(query))
+                if (query.IsEmpty)
                 {
                     this = default;
                     queryString = string.Empty;
                 }
                 else
                 {
-                    currentName = null;
-                    currentValue = null;
+                    Current = default;
                     queryString = query;
                     scanIndex = queryString[0] == '?' ? 1 : 0;
                     textLength = queryString.Length;
@@ -50,18 +64,16 @@ namespace Microsoft.AspNetCore.Internal
                 }
             }
 
-            public (string Key, string Value) Current
-                => (currentName!, currentValue!);
+            public EscapedNameValuePair Current { get; private set; }
 
             public bool MoveNext()
             {
-                currentName = null;
-                currentValue = null;
+                Current = default;
 
                 if (scanIndex < textLength)
                 {
-                    var delimiterIndex = queryString.IndexOf('&', scanIndex);
-                    if (delimiterIndex == -1)
+                    var delimiterIndex = queryString.Slice(scanIndex).IndexOf('&') + scanIndex;
+                    if (delimiterIndex < scanIndex)
                     {
                         delimiterIndex = textLength;
                     }
@@ -73,13 +85,12 @@ namespace Microsoft.AspNetCore.Internal
                             ++scanIndex;
                         }
 
-                        var name = queryString.Substring(scanIndex, equalIndex - scanIndex);
-                        var value = queryString.Substring(equalIndex + 1, delimiterIndex - equalIndex - 1);
-                        currentName = Uri.UnescapeDataString(name.Replace('+', ' '));
-                        currentValue = Uri.UnescapeDataString(value.Replace('+', ' '));
+                        Current = new EscapedNameValuePair(
+                            queryString.Slice(scanIndex, equalIndex - scanIndex),
+                            queryString.Slice(equalIndex + 1, delimiterIndex - equalIndex - 1));
 
-                        equalIndex = queryString.IndexOf('=', delimiterIndex);
-                        if (equalIndex == -1)
+                        equalIndex = queryString.Slice(delimiterIndex).IndexOf('=') + delimiterIndex;
+                        if (equalIndex < delimiterIndex)
                         {
                             equalIndex = textLength;
                         }
@@ -88,16 +99,16 @@ namespace Microsoft.AspNetCore.Internal
                     {
                         if (delimiterIndex > scanIndex)
                         {
-                            var name = queryString.Substring(scanIndex, delimiterIndex - scanIndex);
-                            currentName = Uri.UnescapeDataString(name.Replace('+', ' '));
-                            currentValue = string.Empty;
+                            Current = new EscapedNameValuePair(
+                                queryString.Slice(scanIndex, delimiterIndex - scanIndex),
+                                ReadOnlySpan<char>.Empty);
                         }
                     }
 
                     scanIndex = delimiterIndex + 1;
                 }
 
-                return currentName is not null;
+                return Current.HasValue;
             }
         }
     }

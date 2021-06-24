@@ -175,8 +175,10 @@ namespace Microsoft.AspNetCore.WebUtilities
             var accumulator = new KeyValueAccumulator();
             var enumerable = new QueryStringEnumerable(queryString);
 
-            foreach (var (key, value) in enumerable)
+            foreach (var pair in enumerable)
             {
+                var key = Uri.UnescapeDataString(pair.NameEscaped.ToString().Replace('+', ' '));
+                var value = Uri.UnescapeDataString(pair.ValueEscaped.ToString().Replace('+', ' '));
                 accumulator.Append(key, value);
             }
 

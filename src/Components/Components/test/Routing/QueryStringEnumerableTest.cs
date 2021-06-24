@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Internal;
 using Xunit;
@@ -54,36 +55,14 @@ namespace Microsoft.AspNetCore.Components.Routing
         public void ParseQueryWithEncodedKeyWorks()
         {
             Assert.Collection(Parse("?fields+%5BtodoItems%5D"),
-                kvp => AssertKeyValuePair("fields [todoItems]", string.Empty, kvp));
+                kvp => AssertKeyValuePair("fields+%5BtodoItems%5D", string.Empty, kvp));
         }
 
         [Fact]
         public void ParseQueryWithEncodedValueWorks()
         {
             Assert.Collection(Parse("?=fields+%5BtodoItems%5D"),
-                kvp => AssertKeyValuePair(string.Empty, "fields [todoItems]", kvp));
-        }
-
-        [Fact]
-        public void ParseQueryWithEncodedKeyEmptyValueWorks()
-        {
-            Assert.Collection(Parse("?fields+%5BtodoItems%5D="),
-                kvp => AssertKeyValuePair("fields [todoItems]", string.Empty, kvp));
-        }
-
-        [Fact]
-        public void ParseQueryWithEncodedKeyEncodedValueWorks()
-        {
-            Assert.Collection(Parse("?fields+%5BtodoItems%5D=%5B+1+%5D"),
-                kvp => AssertKeyValuePair("fields [todoItems]", "[ 1 ]", kvp));
-        }
-
-        [Fact]
-        public void ParseQueryWithEncodedKeyEncodedValuesWorks()
-        {
-            Assert.Collection(Parse("?fields+%5BtodoItems%5D=%5B+1+%5D&fields+%5BtodoItems%5D=%5B+2+%5D"),
-                kvp => AssertKeyValuePair("fields [todoItems]", "[ 1 ]", kvp),
-                kvp => AssertKeyValuePair("fields [todoItems]", "[ 2 ]", kvp));
+                kvp => AssertKeyValuePair(string.Empty, "fields+%5BtodoItems%5D", kvp));
         }
 
         [Theory]
@@ -105,9 +84,9 @@ namespace Microsoft.AspNetCore.Components.Routing
         {
             var result = new List<(string key, string value)>();
             var enumerable = new QueryStringEnumerable(query);
-            foreach (var (key, value) in enumerable)
+            foreach (var pair in enumerable)
             {
-                result.Add((key, value));
+                result.Add((pair.NameEscaped.ToString(), pair.ValueEscaped.ToString()));
             }
 
             return result;
