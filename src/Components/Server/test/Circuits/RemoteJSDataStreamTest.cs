@@ -133,8 +133,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             await Task.Delay(TimeSpan.FromSeconds(45));
 
             // Act & Assert 3
-            using var mem = new MemoryStream();
-            var ex = await Assert.ThrowsAsync<TimeoutException>(async() => await remoteJSDataStream.CopyToAsync(mem));
+            var buffer = new byte[9];
+            var ex = await Assert.ThrowsAsync<TimeoutException>(async() => await remoteJSDataStream.ReadAsync(buffer));
             Assert.Equal("Did not receive any data in the alloted time.", ex.Message);
 
             // Act & Assert 4
