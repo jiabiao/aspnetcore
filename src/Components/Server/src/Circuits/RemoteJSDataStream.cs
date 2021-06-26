@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             _jsInteropDefaultCallTimeout = jsInteropDefaultCallTimeout;
             _streamCancellationToken = cancellationToken;
 
-            _lastDataReceivedTime = DateTime.UtcNow;
+            _lastDataReceivedTime = DateTimeOffset.UtcNow;
             _ = ThrowOnTimeout();
 
             _runtime.RemoteJSDataStreamInstances.Add(_streamId, this);
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             try
             {
-                _lastDataReceivedTime = DateTime.UtcNow;
+                _lastDataReceivedTime = DateTimeOffset.UtcNow;
                 _ = ThrowOnTimeout();
 
                 if (!string.IsNullOrEmpty(error))
@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             await Task.Delay(_jsInteropDefaultCallTimeout);
 
-            if (!_disposed && (DateTime.UtcNow >= _lastDataReceivedTime.Add(_jsInteropDefaultCallTimeout)))
+            if (!_disposed && (DateTimeOffset.UtcNow >= _lastDataReceivedTime.Add(_jsInteropDefaultCallTimeout)))
             {
                 // Dispose of the stream if a chunk isn't received within the jsInteropDefaultCallTimeout.
                 var timeoutException = new TimeoutException("Did not receive any data in the alloted time.");

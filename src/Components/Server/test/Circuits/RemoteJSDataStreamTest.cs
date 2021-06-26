@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
             var jsStreamReference = Mock.Of<IJSStreamReference>();
             var remoteJSDataStream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(
-                jsRuntime ?? _jsRuntime,
+                jsRuntime,
                 jsStreamReference,
                 totalLength: 9,
                 maxBufferSize: 50,
